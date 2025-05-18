@@ -1,250 +1,182 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+using System.Diagnostics;
 using System.Drawing;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace PianoTiles
 {
     public partial class Form1 : Form
     {
-        public int[,] map = new int[8, 4];
-        public int cellWidth = 50;
-        public int cellHeight = 80;
-        private Timer timer;
-        private bool keyPressedThisTurn = false;
-        private bool gameStarted = false;
+        private const int HorizontalTilesCount = 4;
+        private const int VerticalTilesCount = 10;
 
-        private Timer timerCountdown;
-        private int score = 0;
-        private int timeLeft = 0;
-        private int timePerTile = 2000; // 2 секунды на старт
+        private const char EmptyTileSymbol = '0';
+        private const char FilledTileSymbol = '1';
+        private const char CompletedTileSymbol = '2';
+        private const char FailedTileSymbol = '3';
 
+        private const int _cellWidth = 50;
+        private const int _cellHeight = 80;
+
+        private readonly Color _emptyTileColor = Color.White;
+        private readonly Color _filledTileColor = Color.Black;
+        private readonly Color _completedTileColor = Color.Blue;
+        private readonly Color _failedTileColor = Color.Red;
+
+        private char[,] _map = new char[VerticalTilesCount, HorizontalTilesCount];
+
+        private float _offset = 0f;
+        private float _speed = 20;
+
+        private int _score = 0;
+        private int _health = 3;
 
         public Form1()
         {
             InitializeComponent();
 
-            this.Text = "Piano";
-            cellWidth = Width / 4;
-            this.Paint += new PaintEventHandler(Repaint);
             this.KeyUp += new KeyEventHandler(OnKeyboardPressed);
-            Init();
-
-            // Таймер для управления логикой игры
-            timer = new Timer();
-            timer.Interval = 50; // обновляем каждую 50 мс
-            timer.Tick += new EventHandler(OnTimerTick);
-
-
-            this.Controls.Add(labelTimer);
-
-
-            this.Controls.Add(labelScore);
         }
 
-        private void OnTimerTick(object sender, EventArgs e)
+        protected override void OnPaint(PaintEventArgs e)
         {
-            if (!gameStarted) return;
+            _offset += _speed;
 
-            timeLeft -= timer.Interval;
-            labelTimer.Text = $"Time left: {timeLeft} ms";
-
-            if (timeLeft <= 0)
+            if (_offset == _cellHeight)
             {
-                Lose();
+                _offset = 0f;
+                CreateNewLine();
             }
-        }
 
-        private void Lose()
-        {
-            timer.Stop();
-            MessageBox.Show($"You lost!\nScore: {score}");
-            Init();
+            DrawMap(e.Graphics, _offset);
         }
 
         private void OnKeyboardPressed(object sender, KeyEventArgs e)
         {
-            switch (e.KeyCode.ToString())
+            if (e.KeyCode >= Keys.D0 && e.KeyCode <= Keys.D9)
             {
-                case "D1":
-                    CheckForPressedButton(0);
-                    break;
-                case "D2":
-                    CheckForPressedButton(1);
-                    break;
-                case "D3":
-                    CheckForPressedButton(2);
-                    break;
-                case "D4":
-                    CheckForPressedButton(3);
-                    break;
-            }
-        }
+                int number = e.KeyCode - Keys.D0;
 
-        public void CheckForPressedButton(int i)
-        {
-            if (map[7, i] != 0)
-            {
-                if (!gameStarted)
+                if (number > _map.GetLength(1))
+                    return;
+
+                if (_map[VerticalTilesCount - 2, number - 1] == FilledTileSymbol)
                 {
-                    gameStarted = true;
-                    timer.Start();
-                    timeLeft = timePerTile;
+                    _score++;
+                    _map[VerticalTilesCount - 2, number - 1] = CompletedTileSymbol;
                 }
-
-                keyPressedThisTurn = true;
-                MoveMap();
-                PlaySound(i);
-
-                score++;
-                labelScore.Text = $"Score: {score}";
-
-                // Сложнение игры
-                if (timePerTile > 500)
-                    timePerTile -= 50; // Уменьшаем время на 50 мс каждый раз
-
-                timeLeft = timePerTile; // Сбрасываем таймер для следующей плитки
-            }
-            else
-            {
-                Lose();
-            }
-        }
-
-
-        public void PlaySound(int sound)
-        {
-            System.IO.Stream str = null;
-
-            switch (sound)
-            {
-                case 0:
-                    str = Properties.Resources.g6;
-                    break;
-                case 1:
-                    str = Properties.Resources.f6;
-                    break;
-                case 2:
-                    str = Properties.Resources.d6;
-                    break;
-                case 3:
-                    str = Properties.Resources.e6;
-                    break;
-            }
-
-            System.Media.SoundPlayer snd = new System.Media.SoundPlayer(str);
-            snd.Play();
-        }
-
-        public void MoveMap()
-        {
-            for(int i = 7; i > 0; i--)
-            {
-                for(int j = 0; j < 4; j++)
+                else
                 {
-                    map[i, j] = map[i - 1, j];
-                }
-            }
-
-            AddNewLine();
-            Invalidate();
-        }
-
-        public void AddNewLine()
-        {
-            Random r = new Random();
-            int j = r.Next(0, 4);
-
-            for (int k = 0; k < 4; k++)
-                map[0, k] = 0;
-            map[0, j] = 1;
-        }
-
-        public void Init()
-        {
-            timer?.Stop();
-            ClearMap();
-            GenerateMap();
-            Invalidate();
-            gameStarted = false;
-            keyPressedThisTurn = false;
-            score = 0;
-            timePerTile = 2000;
-            labelScore.Text = $"Score: {score}";
-            labelTimer.Text = $"Time left: {timePerTile} ms";
-        }
-
-
-        public void ClearMap()
-        {
-            for(int i = 0; i < 8; i++)
-            {
-                for(int j = 0; j < 4; j++)
-                {
-                    map[i, j] = 0;
+                    _health--;
+                    _map[VerticalTilesCount - 2, number - 1] = FailedTileSymbol;
                 }
             }
         }
 
-        public void GenerateMap()
+        private void CreateNewLine()
         {
-            Random r = new Random();
-            for(int i = 0; i < 8; i++)
+            char[] newLine = new char[HorizontalTilesCount];
+
+            Random random = new Random();
+            int FilledTileIndex = random.Next(newLine.Length);
+
+            for (int i = 0; i < newLine.Length; i++)
             {
-                int j = r.Next(0, 4);
-                map[i, j] = 1;
+                if (i == FilledTileIndex)
+                    newLine[i] = FilledTileSymbol;
+                else
+                    newLine[i] = EmptyTileSymbol;
+            }
+
+            UpdateMap(newLine);
+        }
+
+        void UpdateMap(char[] newRow)
+        {
+            int rows = _map.GetLength(0);
+            int cols = _map.GetLength(1);
+
+            for (int i = rows - 2; i >= 0; i--)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    _map[i + 1, j] = _map[i, j];
+                }
+            }
+
+            for (int j = 0; j < cols; j++)
+            {
+                _map[0, j] = newRow[j];
             }
         }
 
-        public void DrawMap(Graphics g)
+        public void DrawMap(Graphics g, float verticalOffset)
         {
-            for(int i = 0; i < 8; i++)
+            g.TranslateTransform(0, Height - VerticalTilesCount * _cellHeight);
+
+            for (int i = 0; i < VerticalTilesCount; i++)
             {
-                for(int j = 0; j < 4; j++)
+                for (int j = 0; j < HorizontalTilesCount; j++)
                 {
-                    if(map[i,j] == 0)
+                    Color tileColor;
+
+                    switch (_map[i, j])
                     {
-                        g.FillRectangle(new SolidBrush(Color.White), cellWidth * j, cellHeight * i, cellWidth, cellHeight);
+                        case EmptyTileSymbol:
+                            tileColor = _emptyTileColor;
+                            break;
+
+                        case FilledTileSymbol:
+                            tileColor = _filledTileColor;
+                            break;
+
+                        case CompletedTileSymbol:
+                            tileColor = _completedTileColor;
+                            break;
+
+                        case FailedTileSymbol:
+                            tileColor = _failedTileColor;
+                            break;
+
+                        default:
+                            tileColor = _emptyTileColor;
+                            break;
                     }
 
-                    if(map[i,j] == 1)
+                    g.FillRectangle(new SolidBrush(tileColor), _cellWidth * j, _cellHeight * i + verticalOffset, _cellWidth, _cellHeight);
+
+                    float xStart = 0;
+                    float xEnd = _cellWidth * HorizontalTilesCount;
+                    float yStart = Height + 25;
+                    float yEnd = yStart;
+                    float lineBold = 5;
+
+                    using (Pen thickPen = new Pen(Color.Black, lineBold))
                     {
-                        g.FillRectangle(new SolidBrush(Color.Black), cellWidth * j, cellHeight * i, cellWidth, cellHeight);
+                        g.DrawLine(thickPen, xStart, yStart, xEnd, yEnd);
                     }
                 }
             }
 
-            for(int i = 0; i < 8; i++)
+            for (int i = 0; i < VerticalTilesCount; i++)
             {
-                g.DrawLine(new Pen(new SolidBrush(Color.Black)), 0, i * cellHeight, 4 * cellWidth, i * cellHeight);
+                float xStartPosition = 0;
+                float xEndPosition = _cellWidth * HorizontalTilesCount;
+                float yStartPosition = i * _cellHeight + _offset;
+                float yEndPosition = yStartPosition;
+
+                g.DrawLine(new Pen(new SolidBrush(Color.Black)), xStartPosition, yStartPosition, xEndPosition, yEndPosition);
             }
 
-            for(int i = 0; i < 4; i++)
+            for (int i = 0; i < HorizontalTilesCount; i++)
             {
-                g.DrawLine(new Pen(new SolidBrush(Color.Black)), i * cellWidth, 0, i * cellWidth, 8 * cellHeight);
+                float xStartPosition = i * _cellWidth;
+                float xEndPosition = xStartPosition;
+                float yStartPosition = 0 + _offset;
+                float yEndPosition = _cellHeight * VerticalTilesCount + _offset;
+
+                g.DrawLine(new Pen(new SolidBrush(Color.Black)), xStartPosition, yStartPosition, xEndPosition, yEndPosition);
             }
-        }
-
-        private void Repaint(object sender, PaintEventArgs e)
-        {
-            Graphics g = e.Graphics;
-            DrawMap(g);
-        }
-
-        private void label1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void labelScore_Click(object sender, EventArgs e)
-        {
-
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -252,9 +184,9 @@ namespace PianoTiles
 
         }
 
-        private void labelTimer_Click(object sender, EventArgs e)
+        private void timer_Tick_1(object sender, EventArgs e)
         {
-
+            Invalidate();
         }
     }
 }
