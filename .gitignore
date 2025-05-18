@@ -1,0 +1,45 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Build results
+bin/
+obj/
+Debug/
+Release/
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+project.lock.json
+project.assets.json
+
+# VS Code
+.vscode/
+
+# Rider
+.idea/
+
+# Resharper
+*.DotSettings.user
+
+# System
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Logs
+*.log
+
+# Auto-generated files
+*.Designer.cs
+
+# Optional: ignore your compiled resources and other IDE-specific folders
+*.pidb
+*.sdf
+*.cache/
+*.dbmdl
+*.bak
+*.tmp
