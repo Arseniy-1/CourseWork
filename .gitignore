@@ -34,7 +34,6 @@ Desktop.ini
 *.log
 
 # Auto-generated files
-*.Designer.cs
 
 # Optional: ignore your compiled resources and other IDE-specific folders
 *.pidb
