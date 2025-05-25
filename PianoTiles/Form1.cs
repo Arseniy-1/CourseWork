@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
@@ -29,13 +30,30 @@ namespace PianoTiles
         private float _speed = 20;
 
         private int _score = 0;
-        private int _health = 3;
+
+        private HealthView _healthView;
+        private Health _health;
+
+        private List<PictureBox> _heartViews;
 
         public Form1()
         {
             InitializeComponent();
+            DoubleBuffered = true;
 
             this.KeyUp += new KeyEventHandler(OnKeyboardPressed);
+
+            _heartViews = new List<PictureBox>
+            {
+                HeartView1,
+                HeartView2,
+                HeartView3
+            };
+
+            _health = new Health();
+            _healthView = new HealthView(_health, _heartViews);
+
+            _health.LostHealth += GameOver;
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -67,7 +85,7 @@ namespace PianoTiles
                 }
                 else
                 {
-                    _health--;
+                    _health.TakeDamage();
                     _map[VerticalTilesCount - 2, number - 1] = FailedTileSymbol;
                 }
             }
@@ -179,6 +197,11 @@ namespace PianoTiles
             }
         }
 
+        private void GameOver()
+        {
+            Console.WriteLine("GameOver");
+        }
+
         private void Form1_Load(object sender, EventArgs e)
         {
 
@@ -187,6 +210,16 @@ namespace PianoTiles
         private void timer_Tick_1(object sender, EventArgs e)
         {
             Invalidate();
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void backgroundWorker1_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+        {
+
         }
     }
 }
