@@ -14,12 +14,10 @@ namespace PianoTiles
             _health = health;
             _heartViews = heartViews;
 
-            Console.WriteLine(_heartViews.Count);
-              
             _health.HealthAmountChanged += ShowHealth;
         }
 
-        private void ShowHealth(int healthAmount)
+        public void ShowHealth(int healthAmount)
         {
             for (int i = 0; i < _heartViews.Count; i++)
             {

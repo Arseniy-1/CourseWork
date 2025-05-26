@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 
 namespace PianoTiles
@@ -24,6 +25,8 @@ namespace PianoTiles
         private readonly Color _completedTileColor = Color.Blue;
         private readonly Color _failedTileColor = Color.Red;
 
+        private readonly int _startHealth = 3;
+
         private char[,] _map = new char[VerticalTilesCount, HorizontalTilesCount];
 
         private float _offset = 0f;
@@ -35,13 +38,15 @@ namespace PianoTiles
         private Health _health;
 
         private List<PictureBox> _heartViews;
+        private List<string> _levelFiles;
+        private int _currentLevelIndex;
+        private string _levelsDirectory = Path.Combine(Application.StartupPath, "Maps");
 
         public Form1()
         {
             InitializeComponent();
-            DoubleBuffered = true;
-
             this.KeyUp += new KeyEventHandler(OnKeyboardPressed);
+            DoubleBuffered = true;
 
             _heartViews = new List<PictureBox>
             {
@@ -50,10 +55,36 @@ namespace PianoTiles
                 HeartView3
             };
 
-            _health = new Health();
+            _health = new Health(_startHealth);
             _healthView = new HealthView(_health, _heartViews);
 
             _health.LostHealth += GameOver;
+
+            if (!Directory.Exists(_levelsDirectory))
+            {
+                Directory.CreateDirectory(_levelsDirectory);
+            }
+
+            _levelFiles = LevelLoader.GetAllLevelFiles(_levelsDirectory);
+
+            Console.WriteLine(_levelFiles.Count);
+
+            InitializeGame();
+        }
+
+        private void InitializeGame()
+        {
+            Random random = new Random();
+            _map = LevelLoader.LoadLevelFromFile(_levelFiles[0]);
+
+            _offset = 0f;
+            _score = 0;
+            timer.Start();
+        }
+
+        private void UpdateScore()
+        {
+            labelScore.Text = $"Счёт: {_score}";
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -81,6 +112,8 @@ namespace PianoTiles
                 if (_map[VerticalTilesCount - 2, number - 1] == FilledTileSymbol)
                 {
                     _score++;
+                    UpdateScore();
+
                     _map[VerticalTilesCount - 2, number - 1] = CompletedTileSymbol;
                 }
                 else
@@ -199,7 +232,46 @@ namespace PianoTiles
 
         private void GameOver()
         {
-            Console.WriteLine("GameOver");
+            timer.Stop();
+
+            DialogResult result = MessageBox.Show(
+                $"Игра окончена! Ваш счёт: {_score}\nХотите начать заново?",
+                "Конец игры",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            // Обрабатываем выбор пользователя
+            if (result == DialogResult.Yes)
+            {
+                RestartGame();
+            }
+            else
+            {
+                Application.Exit();
+            }
+        }
+
+        private void RestartGame()
+        {
+            _score = 0;
+            _offset = 0f;
+            _health.Reset();
+
+            for (int i = 0; i < VerticalTilesCount; i++)
+            {
+                for (int j = 0; j < HorizontalTilesCount; j++)
+                {
+                    _map[i, j] = EmptyTileSymbol;
+                }
+            }
+
+            CreateNewLine();
+
+            _healthView.ShowHealth(_health.CurrentHealth);
+
+            timer.Start();
+
+            Invalidate();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -218,6 +290,11 @@ namespace PianoTiles
         }
 
         private void backgroundWorker1_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+        {
+
+        }
+
+        private void labelScore_Click(object sender, EventArgs e)
         {
 
         }

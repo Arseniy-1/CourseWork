@@ -35,6 +35,7 @@
             this.HeartView3 = new System.Windows.Forms.PictureBox();
             this.HeartView2 = new System.Windows.Forms.PictureBox();
             this.pictureBox4 = new System.Windows.Forms.PictureBox();
+            this.labelScore = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.HeartView1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.HeartView3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.HeartView2)).BeginInit();
@@ -95,12 +96,25 @@
             this.pictureBox4.TabIndex = 4;
             this.pictureBox4.TabStop = false;
             // 
+            // labelScore
+            // 
+            this.labelScore.AutoSize = true;
+            this.labelScore.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.labelScore.Location = new System.Drawing.Point(63, 77);
+            this.labelScore.Name = "labelScore";
+            this.labelScore.Size = new System.Drawing.Size(81, 24);
+            this.labelScore.TabIndex = 5;
+            this.labelScore.Text = "Счет: 0";
+            this.labelScore.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.labelScore.Click += new System.EventHandler(this.labelScore_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.ClientSize = new System.Drawing.Size(204, 656);
+            this.Controls.Add(this.labelScore);
             this.Controls.Add(this.HeartView1);
             this.Controls.Add(this.HeartView2);
             this.Controls.Add(this.HeartView3);
@@ -113,6 +127,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.HeartView2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox4)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -123,6 +138,7 @@
         private System.Windows.Forms.PictureBox HeartView3;
         private System.Windows.Forms.PictureBox HeartView2;
         private System.Windows.Forms.PictureBox pictureBox4;
+        private System.Windows.Forms.Label labelScore;
     }
 }
 
