@@ -127,6 +127,9 @@
   <data name="f6" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Audio\f6.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="failSound" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Audio\failSound.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="g6" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Audio\g6.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>

@@ -101,5 +101,8 @@
   <ItemGroup>
     <None Include="Audio\g6.wav" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Audio\failSound.wav" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

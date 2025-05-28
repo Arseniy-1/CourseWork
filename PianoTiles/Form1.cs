@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using System.Media;
 
 namespace PianoTiles
 {
@@ -115,12 +116,15 @@ namespace PianoTiles
                     UpdateScore();
 
                     _map[VerticalTilesCount - 2, number - 1] = CompletedTileSymbol;
+                    PlaySucsessSound(number);
                 }
                 else
                 {
                     _health.TakeDamage();
+                    PlayMissSound();
                     _map[VerticalTilesCount - 2, number - 1] = FailedTileSymbol;
                 }
+
             }
         }
 
@@ -240,7 +244,6 @@ namespace PianoTiles
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question);
 
-            // Обрабатываем выбор пользователя
             if (result == DialogResult.Yes)
             {
                 RestartGame();
@@ -273,6 +276,45 @@ namespace PianoTiles
 
             Invalidate();
         }
+
+        private void PlaySucsessSound(int number)
+        {
+            switch (number)
+            {
+                case 1:
+                    PlaySound(Properties.Resources.d6); break;
+                case 2:
+                    PlaySound(Properties.Resources.e6); break;
+                case 3:
+                    PlaySound(Properties.Resources.f6); break;
+                case 4:
+                    PlaySound(Properties.Resources.g6); break;
+                default:
+                    break;
+            }
+        }
+
+        private void PlayMissSound()
+        {
+            PlaySound(Properties.Resources.failSound);
+
+        }
+
+        private void PlaySound(Stream soundStream)
+        {
+            try
+            {
+                using (SoundPlayer player = new SoundPlayer(soundStream))
+                {
+                    player.Play();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при воспроизведении звука: {ex.Message}");
+            }
+        }
+
 
         private void Form1_Load(object sender, EventArgs e)
         {
